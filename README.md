@@ -35,6 +35,24 @@ cp .env.example .env
 
 After `nuke`, run `bun run dev` as usual.
 
+## CI
+
+This repo includes a backend-only GitHub Actions workflow at `.github/workflows/ci.yml`.
+
+- Trigger: `pull_request` and pushes to `main`
+- Checks: install dependencies, typecheck, test, build
+- Scope: no service containers and no DB-backed integration services for this first rollout
+- Deferred follow-up: frontend repo CI and any optional service-container integration jobs
+
+CI command parity:
+
+```bash
+bun install --frozen-lockfile
+bun run typecheck
+bun test
+bun run build
+```
+
 ## Endpoints
 
 - `GET /health` — **200** + [`HealthResponse`](../system-specs/specs/002-backend-connectivity/contracts/openapi.yaml) when Postgres responds; **503** + `ApiError` when the probe fails after startup (production server exits shortly afterward). See OpenAPI for schemas.
