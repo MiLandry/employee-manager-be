@@ -8,8 +8,8 @@ import {
   updateEmployee,
 } from '../../src/db/employeesRepository'
 import { DuplicateEmailError, NotFoundError } from '../../src/db/employees/errors'
-import { loadEnv } from '../../src/env'
-import { describeIfPostgres } from './helpers'
+import type { AppEnv } from '../../src/env'
+import { initPostgresTests } from './helpers'
 import { prepareDatabase } from './setup'
 
 const sampleInput = {
@@ -24,13 +24,17 @@ const sampleInput = {
   location: 'London',
 }
 
-const pgDescribe = await describeIfPostgres()
+const pg = await initPostgresTests()
 
-pgDescribe('employeesRepository CRUD', () => {
-  const env = loadEnv()
+pg.describe('employeesRepository CRUD', () => {
+  let env: AppEnv
   let sql: ReturnType<typeof postgres>
 
   beforeAll(async () => {
+    if (!pg.env) {
+      throw new Error('Postgres test env missing')
+    }
+    env = pg.env
     sql = postgres({
       host: env.POSTGRES_HOST,
       port: env.POSTGRES_PORT,

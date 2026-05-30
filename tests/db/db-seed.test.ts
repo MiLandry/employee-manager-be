@@ -1,16 +1,15 @@
 import { expect, test } from 'bun:test'
 import { assertLocalResetAllowed } from '../../scripts/db-reset'
-import { loadEnv } from '../../src/env'
-import { describeIfPostgres } from './helpers'
+import { initPostgresTests, mockAppEnv } from './helpers'
 import { prepareDatabase } from './setup'
 
 test('assertLocalResetAllowed refuses non-local host without override', () => {
-  const env = loadEnv()
   expect(() =>
-    assertLocalResetAllowed({
-      ...env,
-      POSTGRES_HOST: 'prod-db.example.com',
-    }),
+    assertLocalResetAllowed(
+      mockAppEnv({
+        POSTGRES_HOST: 'prod-db.example.com',
+      }),
+    ),
   ).toThrow(/Refusing db:reset/)
 })
 
@@ -19,12 +18,12 @@ test('assertLocalResetAllowed allows override flag', () => {
   process.env.ALLOW_DB_RESET = 'true'
 
   try {
-    const env = loadEnv()
     expect(() =>
-      assertLocalResetAllowed({
-        ...env,
-        POSTGRES_HOST: 'prod-db.example.com',
-      }),
+      assertLocalResetAllowed(
+        mockAppEnv({
+          POSTGRES_HOST: 'prod-db.example.com',
+        }),
+      ),
     ).not.toThrow()
   } finally {
     if (previous === undefined) {
@@ -35,13 +34,17 @@ test('assertLocalResetAllowed allows override flag', () => {
   }
 })
 
-const pgDescribe = await describeIfPostgres()
+const pg = await initPostgresTests()
 
-pgDescribe('runSeed', () => {
+pg.describe('runSeed', () => {
   test('applies seed idempotently', async () => {
+    if (!pg.env) {
+      throw new Error('Postgres test env missing')
+    }
+
     const { runSeed } = await import('../../scripts/db-seed')
     const postgres = (await import('postgres')).default
-    const env = loadEnv()
+    const env = pg.env
     const sql = postgres({
       host: env.POSTGRES_HOST,
       port: env.POSTGRES_PORT,

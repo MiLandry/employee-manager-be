@@ -2,17 +2,21 @@ import { afterAll, beforeAll, beforeEach, expect, test } from 'bun:test'
 import postgres from 'postgres'
 import { closePool } from '../../src/db/connection'
 import { createEmployee, listEmployees } from '../../src/db/employeesRepository'
-import { loadEnv } from '../../src/env'
-import { describeIfPostgres } from './helpers'
+import type { AppEnv } from '../../src/env'
+import { initPostgresTests } from './helpers'
 import { prepareDatabase } from './setup'
 
-const pgDescribe = await describeIfPostgres()
+const pg = await initPostgresTests()
 
-pgDescribe('employeesRepository list', () => {
-  const env = loadEnv()
+pg.describe('employeesRepository list', () => {
+  let env: AppEnv
   let sql: ReturnType<typeof postgres>
 
   beforeAll(async () => {
+    if (!pg.env) {
+      throw new Error('Postgres test env missing')
+    }
+    env = pg.env
     sql = postgres({
       host: env.POSTGRES_HOST,
       port: env.POSTGRES_PORT,

@@ -3,13 +3,12 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import postgres from 'postgres'
-import { loadEnv } from '../../src/env'
 import {
   listMigrationFiles,
   migrationIdFromFilename,
   runMigrations,
 } from '../../src/db/migrate'
-import { describeIfPostgres } from './helpers'
+import { initPostgresTests } from './helpers'
 import { resetEmployeesMigration } from './setup'
 
 describe('migration helpers', () => {
@@ -30,11 +29,15 @@ describe('migration helpers', () => {
   })
 })
 
-const pgDescribe = await describeIfPostgres()
+const pg = await initPostgresTests()
 
-pgDescribe('runMigrations', () => {
+pg.describe('runMigrations', () => {
   test('applies pending migrations and is idempotent on re-run', async () => {
-    const env = loadEnv()
+    if (!pg.env) {
+      throw new Error('Postgres test env missing')
+    }
+
+    const env = pg.env
     const sql = postgres({
       host: env.POSTGRES_HOST,
       port: env.POSTGRES_PORT,
