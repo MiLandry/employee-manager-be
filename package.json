@@ -11,7 +11,10 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "clean": "bun scripts/clean.ts",
-    "nuke": "bun scripts/nuke.ts"
+    "nuke": "bun scripts/nuke.ts",
+    "db:migrate": "bun scripts/db-migrate.ts",
+    "db:seed": "bun scripts/db-seed.ts",
+    "db:reset": "bun scripts/db-reset.ts"
   },
   "dependencies": {
     "hono": "^4.11.3",
