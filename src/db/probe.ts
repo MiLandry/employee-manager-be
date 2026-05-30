@@ -1,15 +1,8 @@
 import postgres from 'postgres'
 import type { AppEnv } from '../env'
+import { toPostgresConfig } from './config'
 
 export type DbProbeResult = { status: 'up' } | { status: 'down'; error: string }
-
-const toConfig = (env: AppEnv) => ({
-  host: env.POSTGRES_HOST,
-  port: env.POSTGRES_PORT,
-  user: env.POSTGRES_USER,
-  password: env.POSTGRES_PASSWORD,
-  database: env.POSTGRES_DB,
-})
 
 /**
  * Runs `SELECT 1` with a short timeout. Used at startup (must succeed) and on `GET /health`.
@@ -17,7 +10,7 @@ const toConfig = (env: AppEnv) => ({
 export const createPostgresProbe =
   (env: AppEnv) =>
   async (): Promise<DbProbeResult> => {
-    const cfg = toConfig(env)
+    const cfg = toPostgresConfig(env)
 
     let sql: ReturnType<typeof postgres> | undefined
     try {

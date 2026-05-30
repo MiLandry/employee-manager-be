@@ -25,6 +25,22 @@ cp .env.example .env
 | `bun run build`     | Emit `dist/` (optional for containers) |
 | `bun run clean`     | Remove `dist/`, `build/`, and tool caches under `node_modules` |
 | `bun run nuke`      | `clean` plus remove `node_modules/`, then `bun install` |
+| `bun run db:migrate` | Apply pending SQL migrations (spec 009) |
+| `bun run db:seed`    | Load dev-only sample employees (idempotent) |
+| `bun run db:reset`   | Truncate `employees` (local host only; see below) |
+
+### Database (spec 009)
+
+After Postgres is configured in `.env`:
+
+```bash
+bun run db:migrate   # creates employees + schema_migrations
+bun run db:seed      # optional dev sample rows
+```
+
+`db:reset` truncates employee rows and refuses non-local `POSTGRES_HOST` unless `ALLOW_DB_RESET=true`.
+
+Repository integration tests require a reachable Postgres instance and are skipped in CI (no service container yet). Route tests for spec 008 should mock the repository until CI Postgres is added (roadmap spec 007).
 
 ### Cleanup
 
