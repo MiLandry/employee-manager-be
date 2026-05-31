@@ -72,6 +72,7 @@ bun run build
 ## Endpoints
 
 - `GET /health` — **200** + [`HealthResponse`](../system-specs/specs/002-backend-connectivity/contracts/openapi.yaml) when Postgres responds; **503** + `ApiError` when the probe fails after startup (production server exits shortly afterward). See OpenAPI for schemas.
+- Employee CRUD (spec 008): `GET/POST /employees/list`, `PUT /employees/{id}/edit`, `DELETE /employees/{id}` — see [`openapi.yaml`](../system-specs/specs/features/008-employee-crud-mui/contracts/openapi.yaml). Mock auth headers: `x-mock-user-id`, `x-mock-roles`.
 
 ## Frontend dev
 

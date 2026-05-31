@@ -47,4 +47,25 @@ describe('authorization policy', () => {
       expect(result.reason).toContain('default')
     }
   })
+
+  test('allows employees read for viewer', () => {
+    const result = authorize(
+      { userId: 'u-viewer', roles: ['viewer'] },
+      'read',
+      'employees',
+    )
+    expect(result.allow).toBe(true)
+  })
+
+  test('denies employees delete for manager', () => {
+    const result = authorize(
+      { userId: 'u-manager', roles: ['manager'] },
+      'delete',
+      'employees',
+    )
+    expect(result.allow).toBe(false)
+    if (!result.allow) {
+      expect(result.status).toBe(403)
+    }
+  })
 })

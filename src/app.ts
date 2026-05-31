@@ -4,10 +4,13 @@ import { enforceAuthorization } from './auth/guard'
 import { resolveMockPrincipal } from './auth/mockPrincipal'
 import type { Principal } from './auth/types'
 import type { DbProbeResult } from './db/probe'
+import { registerEmployeeRoutes } from './employees/routes'
+import type { EmployeesService } from './employees/service'
 
 export type AppDeps = {
   probeDb: () => Promise<DbProbeResult>
   resolvePrincipal?: (request: Request) => Principal | null
+  employees?: EmployeesService
   /**
    * Called when `GET /health` detects Postgres is unreachable (before returning 503).
    * Wired in production to exit the process; omit in tests or use a no-op.
@@ -24,7 +27,13 @@ export const createApp = (deps: AppDeps): Hono => {
     cors({
       origin: '*',
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Accept'],
+      allowHeaders: [
+        'Content-Type',
+        'Accept',
+        'x-mock-user-id',
+        'x-mock-roles',
+        'x-mock-tenant-id',
+      ],
     }),
   )
 
@@ -88,6 +97,13 @@ export const createApp = (deps: AppDeps): Hono => {
       201,
     )
   })
+
+  if (deps.employees) {
+    registerEmployeeRoutes(app, {
+      resolvePrincipal,
+      employees: deps.employees,
+    })
+  }
 
   app.onError((err, c) => {
     console.error(err)

@@ -1,6 +1,7 @@
 import { ZodError } from 'zod'
 import { createApp } from './app'
 import { createPostgresProbe } from './db/probe'
+import { createEmployeesService } from './employees/service'
 import { loadEnv } from './env'
 
 const readEnv = () => {
@@ -28,6 +29,7 @@ const bootstrap = async (): Promise<void> => {
 
   const app = createApp({
     probeDb,
+    employees: createEmployeesService(env),
     onDatabaseUnavailable: () => {
       queueMicrotask(() => {
         console.error(
