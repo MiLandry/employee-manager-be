@@ -8,8 +8,8 @@ export type Principal = {
   tenantId?: string
 }
 
-export type AuthAction = 'read' | 'create'
-export type AuthResource = 'health' | 'users'
+export type AuthAction = 'read' | 'create' | 'update' | 'delete'
+export type AuthResource = 'health' | 'users' | 'employees'
 
 export type AuthDecision =
   | { allow: true }

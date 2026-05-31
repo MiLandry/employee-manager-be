@@ -4,10 +4,20 @@ const PERMISSIONS: Record<AuthResource, Record<AuthAction, Role[]>> = {
   health: {
     read: ['admin', 'manager', 'viewer'],
     create: [],
+    update: [],
+    delete: [],
   },
   users: {
     read: ['admin', 'manager'],
     create: ['admin'],
+    update: [],
+    delete: [],
+  },
+  employees: {
+    read: ['admin', 'manager', 'viewer'],
+    create: ['admin'],
+    update: ['admin', 'manager'],
+    delete: ['admin'],
   },
 }
 
