@@ -2,6 +2,8 @@
 
 Bun runtime + **Hono** BFF implementing spec 002 health and Postgres connectivity.
 
+Project constitution and specs live in the sibling [`system-specs`](../system-specs) repository (see `.specify/memory/constitution.md` there).
+
 ## Setup
 
 PostgreSQL must be reachable before the server accepts traffic: startup runs a **`SELECT 1`** probe against the configured database. If it fails, the process **exits with code `1`** (nothing listens on `PORT`).
