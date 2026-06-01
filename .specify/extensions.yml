@@ -2,14 +2,6 @@ installed: []
 settings:
   auto_execute_hooks: true
 hooks:
-  before_constitution:
-  - extension: git
-    command: speckit.git.initialize
-    enabled: true
-    optional: false
-    prompt: Execute speckit.git.initialize?
-    description: Initialize Git repository before constitution setup
-    condition: null
   before_specify:
   - extension: git
     command: speckit.git.feature
@@ -73,14 +65,6 @@ hooks:
     optional: true
     prompt: Commit outstanding changes before issue sync?
     description: Auto-commit before tasks-to-issues conversion
-    condition: null
-  after_constitution:
-  - extension: git
-    command: speckit.git.commit
-    enabled: true
-    optional: true
-    prompt: Commit constitution changes?
-    description: Auto-commit after constitution update
     condition: null
   after_specify:
   - extension: git
