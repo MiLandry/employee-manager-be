@@ -17,6 +17,8 @@
     "db:reset": "bun scripts/db-reset.ts"
   },
   "dependencies": {
+    "graphql": "^16.12.0",
+    "graphql-yoga": "^5.18.0",
     "hono": "^4.11.3",
     "postgres": "^3.4.5",
     "zod": "^3.25.76"
