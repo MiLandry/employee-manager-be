@@ -4,15 +4,15 @@ import { enforceAuthorization } from './auth/guard'
 import { resolveMockPrincipal } from './auth/mockPrincipal'
 import type { Principal } from './auth/types'
 import type { DbProbeResult } from './db/probe'
-import { registerEmployeeRoutes } from './employees/routes'
 import type { EmployeesService } from './employees/service'
+import { createGraphQLYoga } from './graphql/yoga'
 
 export type AppDeps = {
   probeDb: () => Promise<DbProbeResult>
   resolvePrincipal?: (request: Request) => Principal | null
   employees?: EmployeesService
   /**
-   * Called when `GET /health` detects Postgres is unreachable (before returning 503).
+   * Called when the health query detects Postgres is unreachable (before returning GraphQL error).
    * Wired in production to exit the process; omit in tests or use a no-op.
    */
   onDatabaseUnavailable?: () => void
@@ -21,6 +21,7 @@ export type AppDeps = {
 export const createApp = (deps: AppDeps): Hono => {
   const app = new Hono()
   const resolvePrincipal = deps.resolvePrincipal ?? resolveMockPrincipal
+  const yoga = createGraphQLYoga(deps)
 
   app.use(
     '*',
@@ -37,26 +38,9 @@ export const createApp = (deps: AppDeps): Hono => {
     }),
   )
 
-  app.get('/health', async (c) => {
-    const db = await deps.probeDb()
-
-    if (db.status !== 'up') {
-      deps.onDatabaseUnavailable?.()
-      return c.json(
-        {
-          error: `Database unavailable: ${db.error}`,
-          code: 'DATABASE_UNAVAILABLE',
-        },
-        503,
-      )
-    }
-
-    return c.json({
-      status: 'ok' as const,
-      timestamp: new Date().toISOString(),
-      message: 'Service is healthy',
-      db,
-    })
+  app.all('/graphql', async (c) => {
+    const response = await yoga.fetch(c.req.raw)
+    return response
   })
 
   app.get('/users', (c) => {
@@ -97,13 +81,6 @@ export const createApp = (deps: AppDeps): Hono => {
       201,
     )
   })
-
-  if (deps.employees) {
-    registerEmployeeRoutes(app, {
-      resolvePrincipal,
-      employees: deps.employees,
-    })
-  }
 
   app.onError((err, c) => {
     console.error(err)

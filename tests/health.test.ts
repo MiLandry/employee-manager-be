@@ -1,41 +1,60 @@
 import { describe, expect, test } from 'bun:test'
 import { createApp } from '../src/app'
+import { gqlRequest } from '../src/graphql/gqlRequest'
 
-describe('GET /health', () => {
-  test('returns 200 when database probe succeeds', async () => {
+const HEALTH_QUERY = /* GraphQL */ `
+  query Health {
+    health {
+      status
+      timestamp
+      message
+      db {
+        status
+        error
+      }
+    }
+  }
+`
+
+describe('GraphQL health query', () => {
+  test('returns health when database probe succeeds', async () => {
     const app = createApp({
       probeDb: async () => ({ status: 'up' }),
     })
 
-    const res = await app.request('http://localhost/health')
-
+    const res = await gqlRequest(app, HEALTH_QUERY)
     expect(res.status).toBe(200)
 
     const body = (await res.json()) as {
-      status: string
-      timestamp: string
-      message?: string
-      db: { status: string; error?: string }
+      data?: {
+        health: {
+          status: string
+          timestamp: string
+          message?: string
+          db: { status: string }
+        }
+      }
     }
 
-    expect(body.status).toBe('ok')
-    expect(body.timestamp.length).toBeGreaterThan(10)
-    expect(body.message).toBe('Service is healthy')
-    expect(body.db.status).toBe('up')
+    expect(body.data?.health.status).toBe('ok')
+    expect(body.data?.health.timestamp.length).toBeGreaterThan(10)
+    expect(body.data?.health.message).toBe('Service is healthy')
+    expect(body.data?.health.db.status).toBe('up')
   })
 
-  test('returns 503 when database probe fails', async () => {
+  test('returns GraphQL error when database probe fails', async () => {
     const app = createApp({
       probeDb: async () => ({ status: 'down', error: 'boom' }),
     })
 
-    const res = await app.request('http://localhost/health')
-
+    const res = await gqlRequest(app, HEALTH_QUERY)
     expect(res.status).toBe(503)
 
-    const body = (await res.json()) as { error?: string; code?: string }
+    const body = (await res.json()) as {
+      errors?: Array<{ extensions?: { code?: string }; message?: string }>
+    }
 
-    expect(body.code).toBe('DATABASE_UNAVAILABLE')
-    expect(body.error).toContain('boom')
+    expect(body.errors?.[0]?.extensions?.code).toBe('DATABASE_UNAVAILABLE')
+    expect(body.errors?.[0]?.message).toContain('boom')
   })
 })
