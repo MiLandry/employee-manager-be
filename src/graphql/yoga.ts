@@ -8,8 +8,8 @@ import { typeDefs } from './typeDefs'
 export const createGraphQLYoga = (deps: AppDeps) => {
   const resolvePrincipal = deps.resolvePrincipal ?? resolveMockPrincipal
 
-  const yoga = createYoga<Record<string, never>, GraphQLContext>({
-    schema: createSchema({
+  const yoga = createYoga({
+    schema: createSchema<GraphQLContext>({
       typeDefs,
       resolvers,
     }),
