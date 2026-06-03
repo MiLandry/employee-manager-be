@@ -1,4 +1,6 @@
-import { createSchema, createYoga } from 'graphql-yoga'
+import { buildSubgraphSchema } from '@apollo/subgraph'
+import { parse } from 'graphql'
+import { createYoga } from 'graphql-yoga'
 import type { AppDeps } from '../app'
 import { resolveMockPrincipal } from '../auth/mockPrincipal'
 import type { GraphQLContext } from './context'
@@ -9,10 +11,7 @@ export const createGraphQLYoga = (deps: AppDeps) => {
   const resolvePrincipal = deps.resolvePrincipal ?? resolveMockPrincipal
 
   const yoga = createYoga({
-    schema: createSchema<GraphQLContext>({
-      typeDefs,
-      resolvers,
-    }),
+    schema: buildSubgraphSchema([{ typeDefs: parse(typeDefs), resolvers }]),
     graphqlEndpoint: '/graphql',
     graphiql: process.env.NODE_ENV !== 'production',
     context: ({ request }): GraphQLContext => ({

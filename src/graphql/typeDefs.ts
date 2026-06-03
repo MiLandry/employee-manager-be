@@ -1,4 +1,10 @@
 export const typeDefs = /* GraphQL */ `
+  extend schema
+    @link(
+      url: "https://specs.apollo.dev/federation/v2.3"
+      import: ["@key", "@shareable"]
+    )
+
   enum HealthStatus {
     ok
     error
@@ -27,7 +33,7 @@ export const typeDefs = /* GraphQL */ `
     db: DbProbe!
   }
 
-  type Employee {
+  type Employee @key(fields: "id") {
     id: ID!
     fullName: String!
     email: String!

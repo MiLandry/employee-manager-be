@@ -46,7 +46,7 @@ const bootstrap = async (): Promise<void> => {
   })
 
   console.log(
-    `BFF listening on http://localhost:${env.PORT} (PostgreSQL OK at startup)`,
+    `Employees subgraph on http://localhost:${env.PORT}/graphql (PostgreSQL OK at startup)`,
   )
 }
 

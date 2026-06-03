@@ -1,4 +1,5 @@
 INSERT INTO employees (
+  id,
   full_name,
   email,
   department,
@@ -11,6 +12,7 @@ INSERT INTO employees (
 )
 VALUES
   (
+    '11111111-1111-1111-1111-111111111111',
     'Anna Adams',
     'seed.anna@example.com',
     'Engineering',
@@ -22,6 +24,7 @@ VALUES
     'Remote'
   ),
   (
+    '22222222-2222-2222-2222-222222222222',
     'Brian Baker',
     'seed.brian@example.com',
     'Sales',
@@ -33,6 +36,7 @@ VALUES
     'New York'
   ),
   (
+    '33333333-3333-3333-3333-333333333333',
     'Alice Chen',
     'seed.alice@example.com',
     'HR',
