@@ -1,5 +1,6 @@
 import { authorize } from '../auth/policy'
 import { DuplicateEmailError, NotFoundError } from '../db/employees/errors'
+import type { Employee } from '../db/employees/types'
 import { employeeIdSchema, employeeWriteSchema } from '../employees/schema'
 import type { GraphQLContext } from './context'
 import { graphqlAppError, graphqlAuthError } from './errors'
@@ -28,6 +29,17 @@ const requireAuthorized = (
 }
 
 export const resolvers = {
+  Employee: {
+    __resolveReference: async (
+      reference: { id: string },
+      ctx: GraphQLContext,
+    ): Promise<Employee | null> => {
+      requireAuthorized(ctx, 'read', 'employees')
+      const employees = requireEmployeesService(ctx)
+      return employees.getEmployeeById(reference.id)
+    },
+  },
+
   Query: {
     health: async (_parent: unknown, _args: unknown, ctx: GraphQLContext) => {
       const db = await ctx.probeDb()

@@ -17,6 +17,7 @@
     "db:reset": "bun scripts/db-reset.ts"
   },
   "dependencies": {
+    "@apollo/subgraph": "^2.12.2",
     "graphql": "^16.12.0",
     "graphql-yoga": "^5.18.0",
     "hono": "^4.11.3",

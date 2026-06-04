@@ -80,6 +80,7 @@ const createMockEmployeesService = (
   overrides: Partial<EmployeesService> = {},
 ): EmployeesService => ({
   listEmployees: async () => [sampleEmployee],
+  getEmployeeById: async (id) => (id === sampleEmployee.id ? sampleEmployee : null),
   createEmployee: async (input) => ({
     ...sampleEmployee,
     ...input,
