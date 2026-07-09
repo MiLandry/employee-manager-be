@@ -1,6 +1,6 @@
 # Employee Manager — Backend (BFF)
 
-Bun runtime + **Hono** BFF implementing spec 002 health and Postgres connectivity.
+Bun runtime + **Hono** + **GraphQL Yoga**, implementing the `employees` federated GraphQL subgraph (specs 009-011). Composed into the graph by `employee-manager-router` (Apollo Router). Retains the spec 002 Postgres health probe, now exposed as a `health` query instead of a REST endpoint.
 
 Project constitution and specs live in the sibling [`system-specs`](../system-specs) repository (see `.specify/memory/constitution.md` there).
 
@@ -73,9 +73,14 @@ bun run build
 
 ## Endpoints
 
-- `GET /health` — **200** + [`HealthResponse`](../system-specs/specs/architecture/002-backend-connectivity/contracts/openapi.yaml) when Postgres responds; **503** + `ApiError` when the probe fails after startup (production server exits shortly afterward). See OpenAPI for schemas.
-- Employee CRUD (spec 008): `GET/POST /employees/list`, `PUT /employees/{id}/edit`, `DELETE /employees/{id}` — see [`openapi.yaml`](../system-specs/specs/features/008-employee-crud-mui/contracts/openapi.yaml). Mock auth headers: `x-mock-user-id`, `x-mock-roles`.
+This service exposes a single HTTP endpoint, `/graphql` (GraphQL Yoga, GraphiQL enabled outside `production`), serving an Apollo Federation v2.3 subgraph schema (`src/graphql/typeDefs.ts`):
+
+- `query health: Health!` — runs the Postgres `SELECT 1` probe; returns `db.status: up|down`. On `down`, the query errors with code `DATABASE_UNAVAILABLE` and the process exits shortly afterward (mirrors the old REST `/health` 503 behavior).
+- `Employee` entity (`@key(fields: "id")`), resolved here and stitched into the graph by `employee-manager-router`:
+  - `query employees(name, department): [Employee!]!`
+  - `mutation createEmployee`, `updateEmployee`, `deleteEmployee`
+- Mock auth headers `x-mock-user-id`, `x-mock-roles` gate reads/writes exactly as before (see `src/auth`).
 
 ## Frontend dev
 
-Ensure `VITE_API_BASE_URL` in `employee-manager-fe` matches `PORT` (default `http://localhost:3000`). Run FE with `bun run dev` (MSW off) once the backend has bound successfully. If Postgres goes away while the backend is running, `GET /health` returns **503** and this process exits shortly after responding.
+`employee-manager-fe` does not call this service directly. It points `VITE_GRAPHQL_URL` at `employee-manager-router` (the Apollo Router gateway, default `http://localhost:4000/graphql`), which composes this subgraph with others. Run this backend, the router, then the FE (`bun run dev`, MSW off) in that order. If Postgres goes away while this subgraph is running, the `health` query starts failing and this process exits shortly after responding.
