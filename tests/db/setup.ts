@@ -40,8 +40,5 @@ export const resetEmployeesMigration = async (sql: Sql): Promise<void> => {
       applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
-  await sql`
-    DELETE FROM schema_migrations
-    WHERE id = '001_create_employees'
-  `
+  await sql`DELETE FROM schema_migrations`
 }
