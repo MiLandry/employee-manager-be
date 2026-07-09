@@ -15,7 +15,7 @@ import { prepareDatabase } from './setup'
 const sampleInput = {
   fullName: 'Ada Lovelace',
   email: 'ada.lovelace@example.com',
-  department: 'Engineering',
+  department: 'Engineering' as const,
   jobTitle: 'Engineer',
   employmentStatus: 'active' as const,
   managerName: 'Charles Babbage',

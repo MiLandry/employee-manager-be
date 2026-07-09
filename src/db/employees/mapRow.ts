@@ -1,10 +1,10 @@
-import type { Employee, EmploymentStatus } from './types'
+import type { Department, Employee, EmploymentStatus } from './types'
 
 export type EmployeeRow = {
   id: string
   full_name: string
   email: string
-  department: string
+  department: Department
   job_title: string
   employment_status: EmploymentStatus
   manager_name: string
