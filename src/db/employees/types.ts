@@ -1,10 +1,11 @@
 export type EmploymentStatus = 'active' | 'inactive' | 'on_leave'
+export type Department = 'Engineering' | 'Sales' | 'HR'
 
 export type Employee = {
   id: string
   fullName: string
   email: string
-  department: string
+  department: Department
   jobTitle: string
   employmentStatus: EmploymentStatus
   managerName: string
@@ -18,7 +19,7 @@ export type Employee = {
 export type CreateEmployeeInput = {
   fullName: string
   email: string
-  department: string
+  department: Department
   jobTitle: string
   employmentStatus: EmploymentStatus
   managerName: string
@@ -31,5 +32,5 @@ export type UpdateEmployeeInput = CreateEmployeeInput
 
 export type ListEmployeesFilters = {
   name?: string
-  department?: string
+  department?: Department
 }

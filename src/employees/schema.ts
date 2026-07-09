@@ -1,11 +1,12 @@
 import { z } from 'zod'
 
 export const employmentStatusSchema = z.enum(['active', 'inactive', 'on_leave'])
+export const departmentSchema = z.enum(['Engineering', 'Sales', 'HR'])
 
 export const employeeWriteSchema = z.object({
   fullName: z.string().trim().min(1),
   email: z.string().trim().email(),
-  department: z.string().trim().min(1),
+  department: departmentSchema,
   jobTitle: z.string().trim().min(1),
   employmentStatus: employmentStatusSchema,
   managerName: z.string().trim().min(1),

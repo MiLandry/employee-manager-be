@@ -21,6 +21,12 @@ export const typeDefs = /* GraphQL */ `
     on_leave
   }
 
+  enum Department {
+    Engineering
+    Sales
+    HR
+  }
+
   type DbProbe {
     status: DbStatus!
     error: String
@@ -37,7 +43,7 @@ export const typeDefs = /* GraphQL */ `
     id: ID!
     fullName: String!
     email: String!
-    department: String!
+    department: Department!
     jobTitle: String!
     employmentStatus: EmploymentStatus!
     managerName: String!
@@ -51,7 +57,7 @@ export const typeDefs = /* GraphQL */ `
   input EmployeeInput {
     fullName: String!
     email: String!
-    department: String!
+    department: Department!
     jobTitle: String!
     employmentStatus: EmploymentStatus!
     managerName: String!
@@ -62,7 +68,7 @@ export const typeDefs = /* GraphQL */ `
 
   type Query {
     health: Health!
-    employees(name: String, department: String): [Employee!]!
+    employees(name: String, department: Department): [Employee!]!
   }
 
   type Mutation {

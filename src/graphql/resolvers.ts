@@ -1,6 +1,6 @@
 import { authorize } from '../auth/policy'
 import { DuplicateEmailError, NotFoundError } from '../db/employees/errors'
-import type { Employee } from '../db/employees/types'
+import type { Department, Employee } from '../db/employees/types'
 import { employeeIdSchema, employeeWriteSchema } from '../employees/schema'
 import type { GraphQLContext } from './context'
 import { graphqlAppError, graphqlAuthError } from './errors'
@@ -63,7 +63,7 @@ export const resolvers = {
 
     employees: async (
       _parent: unknown,
-      args: { name?: string | null; department?: string | null },
+      args: { name?: string | null; department?: Department | null },
       ctx: GraphQLContext,
     ) => {
       requireAuthorized(ctx, 'read', 'employees')

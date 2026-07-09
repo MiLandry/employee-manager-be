@@ -33,7 +33,7 @@ const viewerHeaders = {
 }
 
 const EMPLOYEES_QUERY = /* GraphQL */ `
-  query Employees($name: String, $department: String) {
+  query Employees($name: String, $department: Department) {
     employees(name: $name, department: $department) {
       id
       fullName
@@ -107,7 +107,7 @@ const createTestApp = (employees: EmployeesService) =>
 const gqlBody = async (res: Response) =>
   (await res.json()) as {
     data?: Record<string, unknown>
-    errors?: Array<{ extensions?: { code?: string } }>
+    errors?: Array<{ message?: string; extensions?: { code?: string } }>
   }
 
 describe('GraphQL employee operations', () => {
@@ -197,6 +197,81 @@ describe('GraphQL employee operations', () => {
     )
     const body = await gqlBody(res)
     expect(body.data?.deleteEmployee).toBe(true)
+  })
+
+  test('createEmployee rejects a non-enum department and writes no row', async () => {
+    let createCalled = false
+    const app = createTestApp(
+      createMockEmployeesService({
+        createEmployee: async (input) => {
+          createCalled = true
+          return { ...sampleEmployee, ...input }
+        },
+      }),
+    )
+    const res = await gqlRequest(
+      app,
+      CREATE_EMPLOYEE,
+      { input: { ...employeeInput, department: 'Marketing' } },
+      adminHeaders,
+    )
+    const body = await gqlBody(res)
+    // "Marketing" is rejected by GraphQL's own enum-coercion validation before
+    // the resolver runs, so this is a bare GraphQLError with no extensions.code
+    // (unlike the resolver-level VALIDATION_ERROR from Zod for other fields).
+    expect(body.errors?.[0]?.message).toContain('Department')
+    expect(body.data).toBeUndefined()
+    expect(createCalled).toBe(false)
+  })
+
+  test.each(['Engineering', 'Sales', 'HR'])(
+    'createEmployee accepts canonical department %s',
+    async (department) => {
+      const app = createTestApp(createMockEmployeesService())
+      const res = await gqlRequest(
+        app,
+        CREATE_EMPLOYEE,
+        { input: { ...employeeInput, department } },
+        adminHeaders,
+      )
+      const body = await gqlBody(res)
+      expect(body.errors).toBeUndefined()
+      const created = body.data?.createEmployee as { email: string }
+      expect(created.email).toBe(employeeInput.email)
+    },
+  )
+
+  test('updateEmployee rejects a non-canonical department and leaves the record unchanged', async () => {
+    let updateCalled = false
+    const app = createTestApp(
+      createMockEmployeesService({
+        updateEmployee: async (id, input) => {
+          updateCalled = true
+          return { ...sampleEmployee, ...input, id }
+        },
+      }),
+    )
+    const res = await gqlRequest(
+      app,
+      UPDATE_EMPLOYEE,
+      {
+        id: sampleEmployee.id,
+        input: {
+          fullName: 'Ada Lovelace',
+          email: 'ada@example.com',
+          department: 'Marketing',
+          jobTitle: 'Lead Engineer',
+          employmentStatus: 'active',
+          managerName: 'Charles Babbage',
+          startDate: '1843-01-01',
+        },
+      },
+      managerHeaders,
+    )
+    const body = await gqlBody(res)
+    expect(body.errors?.[0]?.message).toContain('Department')
+    expect(body.data).toBeUndefined()
+    expect(updateCalled).toBe(false)
   })
 
   test('employees query passes filters to service', async () => {

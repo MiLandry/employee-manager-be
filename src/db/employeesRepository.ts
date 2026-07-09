@@ -169,7 +169,7 @@ export const listEmployees = async (
   const namePattern = filters.name?.trim()
     ? `%${filters.name.trim()}%`
     : undefined
-  const department = filters.department?.trim() || undefined
+  const department = filters.department
 
   const rows = await sql<EmployeeRow[]>`
     SELECT ${sql.unsafe(employeeSelectColumns)}
